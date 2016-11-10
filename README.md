@@ -1,7 +1,6 @@
 # Bitbucket Pipelines PHP 7.0 image
 
-[![](https://images.microbadger.com/badges/version/edbizarro/bitbucket-pipelines-php7.svg)](https://microbadger.com/images/edbizarro/bitbucket-pipelines-php7 "Get your own version badge on microbadger.com")
-[![](https://images.microbadger.com/badges/image/edbizarro/bitbucket-pipelines-php7.svg)](https://microbadger.com/images/edbizarro/bitbucket-pipelines-php7 "Get your own image badge on microbadger.com")
+[![](https://images.microbadger.com/badges/version/edbizarro/bitbucket-pipelines-php7.svg)](https://microbadger.com/images/edbizarro/bitbucket-pipelines-php7 "Get your own version badge on microbadger.com") [![](https://images.microbadger.com/badges/image/edbizarro/bitbucket-pipelines-php7.svg)](https://microbadger.com/images/edbizarro/bitbucket-pipelines-php7 "Get your own image badge on microbadger.com")
 
 ## Based on Ubuntu 16.04
 
@@ -11,8 +10,9 @@
 - [Composer](https://getcomposer.org/)
 - [Deployer](https://github.com/deployphp/deployer)
 - Node / NPM / Gulp / Yarn
+- Mysql 5.7
 
-## Sample `bitbucket-pipelines.yml`
+### Sample `bitbucket-pipelines.yml`
 
 ```YAML
 image: edbizarro/bitbucket-pipelines-php7
