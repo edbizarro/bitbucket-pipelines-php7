@@ -32,10 +32,6 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     autoconf \
     g++ \
     make \
-    # libssl-dev \
-    # libcurl4-openssl-dev \
-    # libsasl2-dev \
-    # libcurl3 \
     --no-install-recommends && rm -r /var/lib/apt/lists/* \
     && apt-get --purge autoremove -y
 
@@ -107,13 +103,8 @@ RUN composer selfupdate && \
     ln -s /tmp/vendor/bin/phpunit /usr/local/bin/phpunit && \
     rm -rf /root/.composer/cache/*
 
-# Deployer
-RUN curl -L http://deployer.org/deployer.phar -o deployer.phar && \
-    mv deployer.phar /usr/local/bin/dep && \
-    chmod +x /usr/local/bin/dep
-
 RUN service php7.0-fpm restart
 
-RUN apt-get clean && \
-		apt-get autoremove && \
+RUN apt-get clean -y && \
+		apt-get autoremove -y && \
 		rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
