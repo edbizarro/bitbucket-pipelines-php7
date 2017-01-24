@@ -66,10 +66,10 @@ RUN pecl install mongodb && \
     echo "extension=mongodb.so" > /etc/php/7.0/mods-available/mongodb.ini
 
 # Run xdebug installation.
-RUN wget --no-check-certificate https://xdebug.org/files/xdebug-2.4.0rc4.tgz && \
-    tar -xzf xdebug-2.4.0rc4.tgz && \
-    rm xdebug-2.4.0rc4.tgz && \
-    cd xdebug-2.4.0RC4 && \
+RUN wget --no-check-certificate https://xdebug.org/files/xdebug-2.5.0.tgz && \
+    tar -xzf xdebug-2.5.0.tgz && \
+    rm xdebug-2.5.0.tgz && \
+    cd xdebug-2.5.0 && \
     phpize && \
     ./configure --enable-xdebug && \
     make && \
