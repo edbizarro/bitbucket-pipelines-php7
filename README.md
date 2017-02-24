@@ -13,7 +13,11 @@
 - Node 7.x / NPM / Gulp / [Yarn](yarnpkg.com)
 - Mysql 5.7
 
-### `bitbucket-pipelines.yml` for test PHP
+#### Why install MySQL in the image?
+
+The Bitbucket pipeline don't support MySQL as service, like many others solutions out these (like Gitlab), so, the solution is to install MySQL and start the service in pipeline run
+
+## `bitbucket-pipelines.yml` example
 
 ```YAML
 image: edbizarro/bitbucket-pipelines-php7
