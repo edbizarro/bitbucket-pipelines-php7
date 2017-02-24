@@ -60,6 +60,9 @@ RUN add-apt-repository -y ppa:ondrej/php && \
     apt-get install -y -qq php-pear php7.0-dev php7.0-mcrypt php7.0-zip php7.0-xml php7.0-mbstring php7.0-curl php7.0-json php7.0-mysql php7.0-tokenizer php7.0-cli php7.0-imap && \
     apt-get remove --purge php5 php5-common
 
+# these packages are needed if you want to use wkhtmltopdf
+RUN apt-get install -y -qq libxext6 libxrender1 libfontconfig1
+
 # MONGO extension
 RUN pecl install mongodb && \
     echo "extension=mongodb.so" > /etc/php/7.0/cli/conf.d/20-mongodb.ini && \
