@@ -1,102 +1,71 @@
-FROM ubuntu:16.04
+FROM edbizarro/gitlab-ci-pipeline-php:7.0
 
-MAINTAINER Eduardo Bizarro <edbizarro@gmail.com>
+# add our user and group first to make sure their IDs get assigned consistently, regardless of whatever dependencies get added
+RUN groupadd -r mysql && useradd -r -g mysql mysql
 
-# Set correct environment variables
-ENV HOME /root
+# add gosu for easy step-down from root
+ENV GOSU_VERSION 1.7
+RUN set -x \
+		&& apt-get update && apt-get install -y --no-install-recommends wget && rm -rf /var/lib/apt/lists/* \
+		&& wget -O /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$(dpkg --print-architecture)" \
+		&& wget -O /usr/local/bin/gosu.asc "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$(dpkg --print-architecture).asc" \
+		&& export GNUPGHOME="$(mktemp -d)" \
+		&& gpg --keyserver ha.pool.sks-keyservers.net --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4 \
+		&& gpg --batch --verify /usr/local/bin/gosu.asc /usr/local/bin/gosu \
+		&& rm -r "$GNUPGHOME" /usr/local/bin/gosu.asc \
+		&& chmod +x /usr/local/bin/gosu \
+		&& gosu nobody true \
+		&& apt-get purge -y --auto-remove wget
 
-# Ensure UTF-8
-ENV LANG       en_US.UTF-8
-ENV LC_ALL     en_US.UTF-8
-RUN locale-gen en_US.UTF-8
+RUN apt-get update && apt-get install -y --no-install-recommends \
+# for MYSQL_RANDOM_ROOT_PASSWORD
+		pwgen \
+# for mysql_ssl_rsa_setup
+		openssl \
+# FATAL ERROR: please install the following Perl modules before executing /usr/local/mysql/scripts/mysql_install_db:
+# File::Basename
+# File::Copy
+# Sys::Hostname
+# Data::Dumper
+		perl \
+	&& rm -rf /var/lib/apt/lists/*
 
-# MYSQL ROOT PASSWORD
-ARG MYSQL_ROOT_PASS=root    
+RUN set -ex; \
+# gpg: key 5072E1F5: public key "MySQL Release Engineering <mysql-build@oss.oracle.com>" imported
+	key='A4A9406876FCBD3C456770C88C718D3B5072E1F5'; \
+	export GNUPGHOME="$(mktemp -d)"; \
+	gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$key"; \
+	gpg --export "$key" > /etc/apt/trusted.gpg.d/mysql.gpg; \
+	rm -r "$GNUPGHOME"; \
+	apt-key list > /dev/null
 
-RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get upgrade -y && \
-    DEBIAN_FRONTEND=noninteractive apt-get dist-upgrade -y && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    software-properties-common \
-    python-software-properties \
-    build-essential \
-    curl \
-    git \
-    unzip \
-    mcrypt \
-    wget \
-    openssl \
-    autoconf \
-    g++ \
-    make \
-    --no-install-recommends && rm -r /var/lib/apt/lists/* \
-    && apt-get --purge autoremove -y
+ENV MYSQL_MAJOR 5.7
+ENV MYSQL_VERSION 5.7.17-1debian8
 
-# OpenSSL
-RUN mkdir -p /usr/local/openssl/include/openssl/ && \
-    ln -s /usr/include/openssl/evp.h /usr/local/openssl/include/openssl/evp.h && \
-    mkdir -p /usr/local/openssl/lib/ && \
-    ln -s /usr/lib/x86_64-linux-gnu/libssl.a /usr/local/openssl/lib/libssl.a && \
-    ln -s /usr/lib/x86_64-linux-gnu/libssl.so /usr/local/openssl/lib/
+RUN echo "deb http://repo.mysql.com/apt/debian/ jessie mysql-${MYSQL_MAJOR}" > /etc/apt/sources.list.d/mysql.list
 
-# NODE JS
-RUN curl -sL https://deb.nodesource.com/setup_7.x | bash - && \
-    apt-get install nodejs -qq && \
-    npm install -g gulp
-    
-# YARN
-RUN curl -o- -L https://yarnpkg.com/install.sh | bash
+# the "/var/lib/mysql" stuff here is because the mysql-server postinst doesn't have an explicit way to disable the mysql_install_db codepath besides having a database already "configured" (ie, stuff in /var/lib/mysql/mysql)
+# also, we set debconf keys to make APT a little quieter
+RUN { \
+		echo mysql-community-server mysql-community-server/data-dir select ''; \
+		echo mysql-community-server mysql-community-server/root-pass password ''; \
+		echo mysql-community-server mysql-community-server/re-root-pass password ''; \
+		echo mysql-community-server mysql-community-server/remove-test-db select false; \
+	} | debconf-set-selections \
+	&& apt-get update && apt-get install -y mysql-server="${MYSQL_VERSION}" && rm -rf /var/lib/apt/lists/* \
+	&& rm -rf /var/lib/mysql && mkdir -p /var/lib/mysql /var/run/mysqld \
+	&& chown -R mysql:mysql /var/lib/mysql /var/run/mysqld \
+# ensure that /var/run/mysqld (used for socket and lock files) is writable regardless of the UID our mysqld instance ends up having at runtime
+	&& chmod 777 /var/run/mysqld
 
-# MYSQL
-# /usr/bin/mysqld_safe
-RUN bash -c 'debconf-set-selections <<< "mysql-server-5.7 mysql-server/root_password password $MYSQL_ROOT_PASS"' && \
-		bash -c 'debconf-set-selections <<< "mysql-server-5.7 mysql-server/root_password_again password $MYSQL_ROOT_PASS"' && \
-		DEBIAN_FRONTEND=noninteractive apt-get update && \
-		DEBIAN_FRONTEND=noninteractive apt-get install -qqy mysql-server-5.7
-		
-# PHP Extensions
-RUN add-apt-repository -y ppa:ondrej/php && \
-    DEBIAN_FRONTEND=noninteractive apt-get update && \
-    apt-get install -y -qq php-pear php7.0-dev php7.0-mcrypt php7.0-zip php7.0-xml php7.0-mbstring php7.0-curl php7.0-json php7.0-mysql php7.0-tokenizer php7.0-cli php7.0-imap && \
-    apt-get remove --purge php5 php5-common
+# comment out a few problematic configuration values
+# don't reverse lookup hostnames, they are usually another container
+RUN sed -Ei 's/^(bind-address|log)/#&/' /etc/mysql/mysql.conf.d/mysqld.cnf \
+		&& echo '[mysqld]\nskip-host-cache\nskip-name-resolve' > /etc/mysql/conf.d/docker.cnf
 
-# MONGO extension
-RUN pecl install mongodb && \
-    echo "extension=mongodb.so" > /etc/php/7.0/cli/conf.d/20-mongodb.ini && \
-    echo "extension=mongodb.so" > /etc/php/7.0/mods-available/mongodb.ini
+VOLUME /var/lib/mysql
 
-# Run xdebug installation.
-RUN wget --no-check-certificate https://xdebug.org/files/xdebug-2.4.0rc4.tgz && \
-    tar -xzf xdebug-2.4.0rc4.tgz && \
-    rm xdebug-2.4.0rc4.tgz && \
-    cd xdebug-2.4.0RC4 && \
-    phpize && \
-    ./configure --enable-xdebug && \
-    make && \
-    cp modules/xdebug.so /usr/lib/. && \
-    echo 'zend_extension="/usr/lib/xdebug.so"' > /etc/php/7.0/cli/conf.d/20-xdebug.ini && \
-    echo 'xdebug.remote_enable=1' >> /etc/php/7.0/cli/conf.d/20-xdebug.ini
-
-# Time Zone
-RUN echo "date.timezone=America/Sao_Paulo" > /etc/php/7.0/cli/conf.d/date_timezone.ini
-
-VOLUME /root/composer
-
-# Environmental Variables
-ENV COMPOSER_HOME /root/composer
-
-# Install Composer
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-
-# Goto temporary directory.
-WORKDIR /tmp
-
-# Run phpunit installation.
-RUN composer selfupdate && \
-    composer global require hirak/prestissimo --prefer-dist --no-interaction && \
-    ln -s /tmp/vendor/bin/phpunit /usr/local/bin/phpunit && \
-    rm -rf /root/.composer/cache/*
-
-RUN apt-get clean -y && \
-		apt-get autoremove -y && \
-		rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+RUN apt-get remove --purge -yqq $BUILD_PACKAGES \
+		&& apt-get autoclean -y \
+    && apt-get --purge autoremove -y && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
