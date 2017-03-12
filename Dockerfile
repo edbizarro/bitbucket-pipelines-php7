@@ -1,8 +1,9 @@
 FROM edbizarro/gitlab-ci-pipeline-php:7.0
 
 LABEL maintainer "Eduardo Bizarro <eduardo@zendev.com.br>" \
-      php="5.6" \
-      node="7"
+      php="7.0" \
+      node="7" \
+			mysql="5.7"
 			
 ENV HOME="/root" \
     PATH=$HOME/.yarn/bin:$PATH \
