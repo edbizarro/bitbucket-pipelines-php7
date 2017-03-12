@@ -51,7 +51,7 @@ RUN set -x \
 	&& chmod 777 /var/run/mysqld \
 	&& sed -Ei 's/^(bind-address|log)/#&/' /etc/mysql/mysql.conf.d/mysqld.cnf \
 		&& echo '[mysqld]\nskip-host-cache\nskip-name-resolve' > /etc/mysql/conf.d/docker.cnf \
-	&& apt-get remove --purge -yqq pwgen perl $BUILD_PACKAGES \
+	&& apt-get remove --purge -yqq $BUILD_PACKAGES \
 	&& apt-get autoclean -y \
 	&& apt-get --purge autoremove -y && \
 		rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
