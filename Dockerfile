@@ -1,12 +1,18 @@
 FROM edbizarro/gitlab-ci-pipeline-php:7.0
 
+LABEL maintainer "Eduardo Bizarro <eduardo@zendev.com.br>" \
+      php="5.6" \
+      node="7"
+			
+ENV HOME="/root" \
+    PATH=$HOME/.yarn/bin:$PATH \
+    COMPOSER_HOME=$HOME/composer \
+		GOSU_VERSION=1.7 \
+		MYSQL_MAJOR=5.7 \
+		MYSQL_VERSION=5.7.17-1debian8
+
 # add our user and group first to make sure their IDs get assigned consistently, regardless of whatever dependencies get added
 RUN groupadd -r mysql && useradd -r -g mysql mysql
-
-# add gosu for easy step-down from root
-ENV GOSU_VERSION 1.7
-ENV MYSQL_MAJOR 5.7
-ENV MYSQL_VERSION 5.7.17-1debian8
 
 RUN set -x \
 		&& apt-get update && apt-get install -y --no-install-recommends wget && rm -rf /var/lib/apt/lists/* \
@@ -18,7 +24,7 @@ RUN set -x \
 		&& rm -r "$GNUPGHOME" /usr/local/bin/gosu.asc \
 		&& chmod +x /usr/local/bin/gosu \
 		&& gosu nobody true \
-		&& apt-get purge -y --auto-remove wget\
+		&& apt-get purge -y --auto-remove wget \
 		&& apt-get update && apt-get install -y --no-install-recommends \
 		pwgen \
 		openssl \
@@ -44,9 +50,9 @@ RUN set -x \
 	&& chmod 777 /var/run/mysqld \
 	&& sed -Ei 's/^(bind-address|log)/#&/' /etc/mysql/mysql.conf.d/mysqld.cnf \
 		&& echo '[mysqld]\nskip-host-cache\nskip-name-resolve' > /etc/mysql/conf.d/docker.cnf \
-	&& apt-get remove --purge -yqq $BUILD_PACKAGES \
+	&& apt-get remove --purge -yqq pwgen perl $BUILD_PACKAGES \
 	&& apt-get autoclean -y \
-    	&& apt-get --purge autoremove -y && \
-    		rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+	&& apt-get --purge autoremove -y && \
+		rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 VOLUME /var/lib/mysql
