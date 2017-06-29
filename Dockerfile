@@ -1,8 +1,8 @@
-FROM edbizarro/gitlab-ci-pipeline-php:7.0
+FROM edbizarro/gitlab-ci-pipeline-php:7.1
 
 LABEL maintainer "Eduardo Bizarro <eduardo@zendev.com.br>" \
-      php="7.0" \
-      node="7" \
+      php="7.1" \
+      node="8" \
 			mysql="5.7"
 			
 ENV HOME="/root" \
