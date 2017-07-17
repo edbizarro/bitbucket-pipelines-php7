@@ -8,9 +8,9 @@ LABEL maintainer "Eduardo Bizarro <eduardo@zendev.com.br>" \
 ENV HOME="/root" \
     PATH=$HOME/.yarn/bin:$PATH \
     COMPOSER_HOME=$HOME/composer \
-		GOSU_VERSION=1.7 \
+		GOSU_VERSION=1.10 \
 		MYSQL_MAJOR=5.7 \
-		MYSQL_VERSION=5.7.17-1debian8
+		MYSQL_VERSION=5.7.19-1debian8
 
 # add our user and group first to make sure their IDs get assigned consistently, regardless of whatever dependencies get added
 RUN groupadd -r mysql && useradd -r -g mysql mysql
@@ -27,9 +27,9 @@ RUN set -x \
 		&& gosu nobody true \
 		&& apt-get purge -y --auto-remove wget \
 		&& apt-get update && apt-get install -y --no-install-recommends \
-		pwgen \
-		openssl \
-		perl \
+  		pwgen \
+  		openssl \
+  		perl \
 		&& rm -rf /var/lib/apt/lists/* \
 		&& set -ex; \
 		key='A4A9406876FCBD3C456770C88C718D3B5072E1F5'; \
