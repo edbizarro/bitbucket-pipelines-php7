@@ -25,7 +25,7 @@ pipelines:
   default:
     - step:
         script:
-          - service mysql start # We need this here because bitbucket don't have MySQL service :/
+          - sudo service mysql start # We need this here because bitbucket don't have MySQL service :/
           - mysql -h localhost -u root -proot -e "CREATE DATABASE test;"
           - composer install --no-interaction --no-progress --prefer-dist
           - yarn
