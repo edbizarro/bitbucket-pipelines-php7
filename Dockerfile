@@ -56,6 +56,7 @@ RUN set -x \
 	&& apt-get autoclean -y \
 	&& apt-get --purge autoremove -y && \
 		rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-USER mysql
+
+USER php
 
 VOLUME /var/lib/mysql
