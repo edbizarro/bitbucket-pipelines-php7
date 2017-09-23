@@ -3,14 +3,15 @@ FROM edbizarro/gitlab-ci-pipeline-php:7.1
 LABEL maintainer "Eduardo Bizarro <eduardo@zendev.com.br>" \
       php="7.1" \
       node="8" \
-			mysql="5.7"
+      mysql="5.7"
 			
-ENV HOME="/root" \
-    PATH=$HOME/.yarn/bin:$PATH \
-    COMPOSER_HOME=$HOME/composer \
-		GOSU_VERSION=1.10 \
-		MYSQL_MAJOR=5.7 \
-		MYSQL_VERSION=5.7.19-1debian8
+ENV PATH=$HOME/.yarn/bin:$PATH
+ENV COMPOSER_HOME=$HOME/composer
+ENV GOSU_VERSION=1.10
+ENV MYSQL_MAJOR=5.7
+ENV MYSQL_VERSION=5.7.19-1debian8
+
+USER root
 
 # add our user and group first to make sure their IDs get assigned consistently, regardless of whatever dependencies get added
 RUN groupadd -r mysql && useradd -r -g mysql mysql
@@ -55,5 +56,6 @@ RUN set -x \
 	&& apt-get autoclean -y \
 	&& apt-get --purge autoremove -y && \
 		rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+USER mysql
 
 VOLUME /var/lib/mysql
