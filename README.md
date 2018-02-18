@@ -10,7 +10,7 @@
 
 - PHP 7.1 with `mcrypt`, `mongod`, `xdebug`, `zip`, `xml`, `mbstring`, `curl`, `json`, `imap`, `mysql`, `iconv`, `gd`, `pdo_mysql`, `opcache`, `intl`. `zip`, `bcmath` and `tokenizer`
 - [Composer](https://getcomposer.org/)
-- Node 8.x / NPM / Gulp / [Yarn](yarnpkg.com)
+- Node 9.x / NPM / [Yarn](yarnpkg.com)
 - Mysql 5.7
 
 #### Why install MySQL in the image?
