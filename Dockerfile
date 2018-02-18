@@ -2,7 +2,7 @@ FROM edbizarro/gitlab-ci-pipeline-php:7.1
 
 LABEL maintainer "Eduardo Bizarro <eduardo@zendev.com.br>" \
       php="7.1" \
-      node="8" \
+      node="9" \
       mysql="5.7"
 			
 ENV PATH=$HOME/.yarn/bin:$PATH
