@@ -29,6 +29,5 @@ pipelines:
           - mysql -h localhost -u root -proot -e "CREATE DATABASE test;"
           - composer install --no-interaction --no-progress --prefer-dist
           - yarn
-          - gulp
           - ./vendor/phpunit/phpunit/phpunit -v --coverage-text --colors=never --stderr
 ```
