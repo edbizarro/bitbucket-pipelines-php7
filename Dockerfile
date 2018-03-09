@@ -39,7 +39,7 @@ RUN set -x \
 		gpg --export "$key" > /etc/apt/trusted.gpg.d/mysql.gpg; \
 		rm -r "$GNUPGHOME"; \
 		apt-key list > /dev/null \
-		&& echo "deb http://repo.mysql.com/apt/debian/ jessie mysql-${MYSQL_MAJOR}" > /etc/apt/sources.list.d/mysql.list \
+		&& echo "deb http://repo.mysql.com/apt/debian/ stretch mysql-${MYSQL_MAJOR}" > /etc/apt/sources.list.d/mysql.list \
 		&& { \
 		echo mysql-community-server mysql-community-server/data-dir select ''; \
 		echo mysql-community-server mysql-community-server/root-pass password 'root'; \
